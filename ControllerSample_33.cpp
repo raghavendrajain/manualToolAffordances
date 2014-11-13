@@ -144,7 +144,7 @@ double MyController::onAction(ActionEvent &evt) {
 
 
   int actionNumber = 3;
-  int functionalFeature = 1;
+  int functionalFeature = 3;
   myfile << setprecision(2) << std::fixed;
 
   SimObj *target = getObj("box_009");
