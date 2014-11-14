@@ -56,6 +56,8 @@ private:
 
 
   Vector3d toolVelAtHit;
+  Vector3d targetVelAtHit;
+
 
   bool positionData;
  
@@ -69,7 +71,10 @@ private:
   bool isXForceVarianceAllowed ;
   bool isZForceVarianceAllowed ;
   double f_x, f_z;
+
   bool flag;
+  bool Colli; 
+  int counter; 
 
   
 };  
@@ -79,9 +84,11 @@ double forceOnTool_x, forceOnTool_z;
 
 void MyController::onInit(InitEvent &evt) {  
 
-
+ 
   SimObj *target = getObj("box_001");
   SimObj *toolName = getObj("TShapeTool_001");
+
+ 
 
   toolName->setMass(10.0);
   
@@ -99,6 +106,12 @@ void MyController::onInit(InitEvent &evt) {
   int xForceVariance = 2000;
   int zForceVariance = 2000;
 
+  
+  flag = true;
+  Colli = false; 
+  counter = 0; 
+  forceOnTool_z = 5000 + f_z;
+  forceOnTool_x = 0;
 
   // Reset the forces applied
   double r;
@@ -106,12 +119,6 @@ void MyController::onInit(InitEvent &evt) {
   f_x = r * int(xForceVariance);
   f_z = r * int(zForceVariance);
 
-  // forceOnTool_x = -1000 - f_x;
-  forceOnTool_z = 10000 + f_z;
-  forceOnTool_x = 0;
-  // forceOnTool_z = 0;
-
-  // cout << "The applied force " << forceOnTool_x <<  " , " << forceOnTool_z << endl;
 
 
   forceOnTool.set(forceOnTool_x, 0 , forceOnTool_z);
@@ -123,9 +130,10 @@ void MyController::onInit(InitEvent &evt) {
 
 //   if (myfile.is_open())
 //   {
+//      myfile << "toolVelAtHit_X" << " , " << "toolVelAtHit_Z" << " , ";  
+//      myfile <<  "targetInitialVel_X" << " , " << "targetInitialVel_Z"  << " , ";
 //      myfile << "Action" << " , " << "FunctionalFeature" << " , " ;
 //      myfile << "forceOnTool_X" << " , " << "forceOnTool_Z " <<  " , ";
-//      myfile << "toolVelAtHit_X" << " , " << "toolVelAtHit_Z" << " , ";  
 //      myfile << "InitialToolPos_X" << " , " << "InitialToolPos_Z" << " , ";
 //      myfile << "InitialTargetPos_X" << " , " << "InitialTargetPos_Z" << " , ";
 //      myfile <<  "targetFinalPos_X" << " , " << "targetFinalPos_Z"  << " , ";
@@ -168,21 +176,21 @@ double MyController::onAction(ActionEvent &evt) {
 
  }
 
-if (isTargetAtRest && isToolAtRest)
+
+if (isTargetAtRest && isToolAtRest && flag )
        {
           
            myfile << actionNumber  << " , " << functionalFeature << " , " ;
            myfile << forceOnTool_x  << " , " << forceOnTool_z << " , " ;
-           myfile << toolVelAtHit.x() << " , " << toolVelAtHit.z() << " , " ;
            myfile << initToolPos.x() << " , " << initToolPos.z() << " , " ;
            myfile << initTargetPos.x() << " , " << initTargetPos.z() << " , " ;
            myfile << currentTargetPos.x() << " , " << currentTargetPos.z() << " , " ;
            myfile << currentTargetPos.x() -  initTargetPos.x() << " , " << currentTargetPos.z() - initTargetPos.z();
            myfile << "\n"; 
-           
-
+          
            cout << "The simulation for " << actionNumber << " , " << functionalFeature << " has been recorded" << endl;
-           exit(0);
+           // exit(0);
+           flag = false;  
 
         
   }
@@ -202,6 +210,29 @@ void MyController::onRecvMsg(RecvMsgEvent &evt) {
   }  
 
 void MyController::onCollision(CollisionEvent &evt) { 
+
+  Colli = true; 
+  counter ++ ; 
+
+  SimObj *target = getObj("box_001");
+  SimObj *toolName = getObj("TShapeTool_001");
+
+
+  if(Colli && counter == 1 )
+  {
+      toolName->getLinearVelocity(toolVelAtHit);
+      target->getLinearVelocity(targetVelAtHit);
+      cout << "The tool velocity is " << toolVelAtHit.x() << " , " << toolVelAtHit.z() << endl;
+      cout << "The target velocity is " << targetVelAtHit.x() << " , " << targetVelAtHit.z() << endl;
+      myfile << toolVelAtHit.x() << " , " << toolVelAtHit.z() << " , " ;
+      myfile << targetVelAtHit.x() << " , " << targetVelAtHit.z() << " , " ;
+      Colli = false;
+
+  }
+
+
+
+
 
 
 }

@@ -56,6 +56,7 @@ private:
 
 
   Vector3d toolVelAtHit;
+  Vector3d targetVelAtHit;
 
   bool positionData;
  
@@ -70,7 +71,8 @@ private:
   bool isZForceVarianceAllowed ;
   double f_x, f_z;
   bool flag;
-
+  bool Colli; 
+  int counter; 
   
 };  
   
@@ -106,10 +108,14 @@ void MyController::onInit(InitEvent &evt) {
   f_x = r * int(xForceVariance);
   f_z = r * int(zForceVariance);
 
-  forceOnTool_x = 10000 + f_x;
-  // forceOnTool_z = 10000 + f_z;
-  // forceOnTool_x = 0;
+  
+
+  flag = true;
+  Colli = false; 
+  counter = 0; 
+  forceOnTool_x = 5000 + f_x;
   forceOnTool_z = 0;
+
 
   // cout << "The applied force " << forceOnTool_x <<  " , " << forceOnTool_z << endl;
 
@@ -171,21 +177,23 @@ double MyController::onAction(ActionEvent &evt) {
 
  }
 
-if (isTargetAtRest && isToolAtRest)
+
+if (isTargetAtRest && isToolAtRest && flag )
        {
           
+           myfile << 0.0 << " , " << 0.0 << " , " ;
+           myfile << 0.0 << " , " << 0.0 << " , " ;
            myfile << actionNumber  << " , " << functionalFeature << " , " ;
            myfile << forceOnTool_x  << " , " << forceOnTool_z << " , " ;
-           myfile << 0.0 << " , " << 0.0 << " , " ;
            myfile << initToolPos.x() << " , " << initToolPos.z() << " , " ;
            myfile << initTargetPos.x() << " , " << initTargetPos.z() << " , " ;
            myfile << currentTargetPos.x() << " , " << currentTargetPos.z() << " , " ;
            myfile << currentTargetPos.x() -  initTargetPos.x() << " , " << currentTargetPos.z() - initTargetPos.z();
            myfile << "\n"; 
-           
-
+          
            cout << "The simulation for " << actionNumber << " , " << functionalFeature << " has been recorded" << endl;
-           exit(0);
+           // exit(0);
+           flag = false;  
 
         
   }
@@ -208,7 +216,6 @@ void MyController::onCollision(CollisionEvent &evt) {
 
 
 }
-
 
 
   
